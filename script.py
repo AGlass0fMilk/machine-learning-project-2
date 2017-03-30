@@ -67,7 +67,7 @@ def learnOLERegression(X,y):
     rows = X.shape[0]
     columns = X.shape[1]
     w = np.ones((columns, 1))
-    for hg in range (0,10000):
+    for hg in range (0,100):
         for j in range (0,columns):
             sumval = 0
             for i in range (0,rows):
@@ -84,6 +84,14 @@ def learnRidgeRegression(X,y,lambd):
     # Output:
     # w = d x 1
     
+    #this equation is found on page 8 in handout C1 for MAP estimate of w using Ridge Regression
+    #I had to use np.dot to avoid an error
+    columns = X.shape[1]
+    I = np.identity(columns)
+    print(I*lambd)
+    print(I*lambd + np.dot(X.T,X))
+    print(inv(np.dot(I,lambd) + np.dot(X.T,X)))
+    w = np.dot(np.dot(inv(np.dot(I,lambd) + np.dot(X.T,X)),X.T),y)
     # IMPLEMENT THIS METHOD
     return w
 
@@ -162,9 +170,8 @@ def mapNonLinear(x,p):
     plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
     plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
     plt.title('QDA')
-    
-    plt.show()"""
-# Problem 2
+
+    plt.show()"""# Problem 2
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
 else:
@@ -174,16 +181,16 @@ else:
 X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
 Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
-w = learnOLERegression(X,y)
-mle = testOLERegression(w,Xtest,ytest)
+#w = learnOLERegression(X,y)
+#mle = testOLERegression(w,Xtest,ytest)
 
-w_i = learnOLERegression(X_i,y)
-mle_i = testOLERegression(w_i,Xtest_i,ytest)
+#w_i = learnOLERegression(X_i,y)
+#mle_i = testOLERegression(w_i,Xtest_i,ytest)
 
-print('MSE without intercept '+str(mle))
-print('MSE with intercept '+str(mle_i))
+#print('MSE without intercept '+str(mle))
+#print('MSE with intercept '+str(mle_i))
 
-"""# Problem 3
+# Problem 3
 k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
@@ -204,7 +211,7 @@ plt.title('MSE for Test Data')
 
 plt.show()
 # Problem 4
-k = 101
+"""k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
 mses4_train = np.zeros((k,1))

@@ -15,9 +15,9 @@ def ldaLearn(X,y):
     #
     # Outputs
     # means - A d x k matrix containing learnt means for each of the k classes
-    # covmat - A single d x d learnt covariance matrix 
+    # covmat - A single d x d learnt covariance matrix
     
-    # IMPLEMENT THIS METHOD 
+    # IMPLEMENT THIS METHOD
     return means,covmat
 
 def qdaLearn(X,y):
@@ -40,7 +40,7 @@ def ldaTest(means,covmat,Xtest,ytest):
     # Outputs
     # acc - A scalar accuracy value
     # ypred - N x 1 column vector indicating the predicted labels
-
+    
     # IMPLEMENT THIS METHOD
     return acc,ypred
 
@@ -52,37 +52,41 @@ def qdaTest(means,covmats,Xtest,ytest):
     # Outputs
     # acc - A scalar accuracy value
     # ypred - N x 1 column vector indicating the predicted labels
-
+    
     # IMPLEMENT THIS METHOD
     return acc,ypred
 
 def learnOLERegression(X,y):
-    # Inputs:                                                         
-    # X = N x d 
-    # y = N x 1                                                               
-    # Output: 
+    # Inputs:
+    # X = N x d
+    # y = N x 1
+    # Output:
     # w = d x 1
     
     #based off equation on handout c1 page 6
-    rows = x.shape[0]
-    columns = x.shape[1]
-    for j in range (0,columns):
-        sumval = 0
-        for i in range (0,rows):
-            sumval += (np.inner(w.T, x[i,])-y[i,])*x[i,j]
-    w[j,] = w[j,] - (.05)*sumval #we'll have to experiment for optimal alpha I assume.
-        # IMPLEMENT THIS METHOD
+    rows = X.shape[0]
+    columns = X.shape[1]
+    w = np.ones((columns, 1))
+    print(y)
+    for hg in range (0,100):
+        for j in range (0,columns):
+            sumval = 0
+            for i in range (0,rows):
+                sumval += (np.inner(w.T, X[i,])-y[i,])*X[i,j]
+            w[j,] = w[j,] - (.005)*sumval #we'll have to experiment for optimal alpha I assume.
+    # IMPLEMENT THIS METHOD
+    print(np.inner(w.T,(X[0,])))
     return w
 
 def learnRidgeRegression(X,y,lambd):
     # Inputs:
-    # X = N x d                                                               
-    # y = N x 1 
+    # X = N x d
+    # y = N x 1
     # lambd = ridge parameter (scalar)
-    # Output:                                                                  
-    # w = d x 1                                                                
-
-    # IMPLEMENT THIS METHOD                                                   
+    # Output:
+    # w = d x 1
+    
+    # IMPLEMENT THIS METHOD
     return w
 
 def testOLERegression(w,Xtest,ytest):
@@ -92,71 +96,76 @@ def testOLERegression(w,Xtest,ytest):
     # ytest = X x 1
     # Output:
     # mse
+    rows = Xtest.shape[0]
+    sumval = 0
+    for i in range (0,rows):
+        sumval +=(ytest[i,]-np.inner((w.T),Xtest[i,]))**2
+    mse = sumval*(1/rows)
     
     # IMPLEMENT THIS METHOD
     return mse
 
 def regressionObjVal(w, X, y, lambd):
-
+    
     # compute squared error (scalar) and gradient of squared error with respect
     # to w (vector) for the given data X and y and the regularization parameter
-    # lambda                                                                  
-
-    # IMPLEMENT THIS METHOD                                             
+    # lambda
+    
+    # IMPLEMENT THIS METHOD
     return error, error_grad
 
 def mapNonLinear(x,p):
-    # Inputs:                                                                  
-    # x - a single column vector (N x 1)                                       
-    # p - integer (>= 0)                                                       
-    # Outputs:                                                                 
-    # Xd - (N x (d+1)) 
-	
+    # Inputs:
+    # x - a single column vector (N x 1)
+    # p - integer (>= 0)
+    # Outputs:
+    # Xd - (N x (d+1))
+    
     # IMPLEMENT THIS METHOD
     return Xd
 
 # Main script
 
 # Problem 1
-# load the sample data                                                                 
-if sys.version_info.major == 2:
+# load the sample data
+"""if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'))
-else:
+    else:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')
-
-# LDA
-means,covmat = ldaLearn(X,y)
-ldaacc,ldares = ldaTest(means,covmat,Xtest,ytest)
-print('LDA Accuracy = '+str(ldaacc))
-# QDA
-means,covmats = qdaLearn(X,y)
-qdaacc,qdares = qdaTest(means,covmats,Xtest,ytest)
-print('QDA Accuracy = '+str(qdaacc))
-
-# plotting boundaries
-x1 = np.linspace(-5,20,100)
-x2 = np.linspace(-5,20,100)
-xx1,xx2 = np.meshgrid(x1,x2)
-xx = np.zeros((x1.shape[0]*x2.shape[0],2))
-xx[:,0] = xx1.ravel()
-xx[:,1] = xx2.ravel()
-
-fig = plt.figure(figsize=[12,6])
-plt.subplot(1, 2, 1)
-
-zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
-plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
-plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-plt.title('LDA')
-
-plt.subplot(1, 2, 2)
-
-zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
-plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
-plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-plt.title('QDA')
-
-plt.show()
+    
+    # LDA
+    means,covmat = ldaLearn(X,y)
+    ldaacc,ldares = ldaTest(means,covmat,Xtest,ytest)
+    print('LDA Accuracy = '+str(ldaacc))
+    # QDA
+    means,covmats = qdaLearn(X,y)
+    qdaacc,qdares = qdaTest(means,covmats,Xtest,ytest)
+    print('QDA Accuracy = '+str(qdaacc))
+    
+    # plotting boundaries
+    x1 = np.linspace(-5,20,100)
+    x2 = np.linspace(-5,20,100)
+    xx1,xx2 = np.meshgrid(x1,x2)
+    xx = np.zeros((x1.shape[0]*x2.shape[0],2))
+    xx[:,0] = xx1.ravel()
+    xx[:,1] = xx2.ravel()
+    
+    fig = plt.figure(figsize=[12,6])
+    plt.subplot(1, 2, 1)
+    
+    zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
+    plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
+    plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+    plt.title('LDA')
+    
+    plt.subplot(1, 2, 2)
+    
+    zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
+    plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
+    plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+    plt.title('QDA')
+    
+    plt.show()"""
 # Problem 2
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
@@ -168,6 +177,7 @@ X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
 Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
 w = learnOLERegression(X,y)
+print(w)
 mle = testOLERegression(w,Xtest,ytest)
 
 w_i = learnOLERegression(X_i,y)
@@ -176,7 +186,7 @@ mle_i = testOLERegression(w_i,Xtest_i,ytest)
 print('MSE without intercept '+str(mle))
 print('MSE with intercept '+str(mle_i))
 
-# Problem 3
+"""# Problem 3
 k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
@@ -202,7 +212,7 @@ lambdas = np.linspace(0, 1, num=k)
 i = 0
 mses4_train = np.zeros((k,1))
 mses4 = np.zeros((k,1))
-opts = {'maxiter' : 20}    # Preferred value.                                                
+opts = {'maxiter' : 20}    # Preferred value.
 w_init = np.ones((X_i.shape[1],1))
 for lambd in lambdas:
     args = (X_i, y, lambd)
@@ -251,4 +261,4 @@ plt.subplot(1, 2, 2)
 plt.plot(range(pmax),mses5)
 plt.title('MSE for Test Data')
 plt.legend(('No Regularization','Regularization'))
-plt.show()
+plt.show()"""

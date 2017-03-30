@@ -67,15 +67,13 @@ def learnOLERegression(X,y):
     rows = X.shape[0]
     columns = X.shape[1]
     w = np.ones((columns, 1))
-    print(y)
-    for hg in range (0,100):
+    for hg in range (0,10000):
         for j in range (0,columns):
             sumval = 0
             for i in range (0,rows):
                 sumval += (np.inner(w.T, X[i,])-y[i,])*X[i,j]
             w[j,] = w[j,] - (.005)*sumval #we'll have to experiment for optimal alpha I assume.
     # IMPLEMENT THIS METHOD
-    print(np.inner(w.T,(X[0,])))
     return w
 
 def learnRidgeRegression(X,y,lambd):
@@ -177,7 +175,6 @@ X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
 Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
 w = learnOLERegression(X,y)
-print(w)
 mle = testOLERegression(w,Xtest,ytest)
 
 w_i = learnOLERegression(X_i,y)

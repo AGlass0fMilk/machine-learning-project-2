@@ -63,7 +63,7 @@ def learnOLERegression(X,y):
     # Output:
     # w = d x 1
     
-    #based off equation on handout c1 page 6
+    #based off equation on handout c1 page 6 i commented it out because it is wrong but I think we can use some of the logic for question 4
     """rows = X.shape[0]
     columns = X.shape[1]
     w = np.ones((columns, 1))
@@ -74,6 +74,7 @@ def learnOLERegression(X,y):
                 sumval += (np.inner(w.T, X[i,])-y[i,])*X[i,j]
             w[j,] = w[j,] - (.005)*sumval #we'll have to experiment for optimal alpha I assume.
     # IMPLEMENT THIS METHOD"""
+    #this based off the equation w = ((X.T*X)^-1)X.T*y given in the notes
     columns = X.shape[1]
     w = np.dot(np.dot(inv(np.dot(X.T,X)),X.T),y)
     return w

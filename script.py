@@ -64,7 +64,7 @@ def learnOLERegression(X,y):
     # w = d x 1
     
     #based off equation on handout c1 page 6
-    rows = X.shape[0]
+    """rows = X.shape[0]
     columns = X.shape[1]
     w = np.ones((columns, 1))
     for hg in range (0,100):
@@ -73,7 +73,9 @@ def learnOLERegression(X,y):
             for i in range (0,rows):
                 sumval += (np.inner(w.T, X[i,])-y[i,])*X[i,j]
             w[j,] = w[j,] - (.005)*sumval #we'll have to experiment for optimal alpha I assume.
-    # IMPLEMENT THIS METHOD
+    # IMPLEMENT THIS METHOD"""
+    columns = X.shape[1]
+    w = np.dot(np.dot(inv(np.dot(X.T,X)),X.T),y)
     return w
 
 def learnRidgeRegression(X,y,lambd):
@@ -126,7 +128,12 @@ def mapNonLinear(x,p):
     # p - integer (>= 0)
     # Outputs:
     # Xd - (N x (d+1))
-    
+    Xn = x.shape[0]
+    Xd = np.zeros((Xn,p+1))
+    for j in range (0,Xn):
+        for i in range (0,p+1):
+            val = pow(x[j],i)
+            Xd[j,i] = val
     # IMPLEMENT THIS METHOD
     return Xd
 
@@ -181,14 +188,14 @@ else:
 X_i = np.concatenate((np.ones((X.shape[0],1)), X), axis=1)
 Xtest_i = np.concatenate((np.ones((Xtest.shape[0],1)), Xtest), axis=1)
 
-#w = learnOLERegression(X,y)
-#mle = testOLERegression(w,Xtest,ytest)
+w = learnOLERegression(X,y)
+mle = testOLERegression(w,Xtest,ytest)
 
-#w_i = learnOLERegression(X_i,y)
-#mle_i = testOLERegression(w_i,Xtest_i,ytest)
+w_i = learnOLERegression(X_i,y)
+mle_i = testOLERegression(w_i,Xtest_i,ytest)
 
-#print('MSE without intercept '+str(mle))
-#print('MSE with intercept '+str(mle_i))
+print('MSE without intercept '+str(mle))
+print('MSE with intercept '+str(mle_i))
 
 # Problem 3
 k = 101
@@ -240,13 +247,14 @@ plt.title('MSE for Test Data')
 plt.legend(['Using scipy.minimize','Direct minimization'])
 plt.show()
 
-
+"""
 # Problem 5
 pmax = 7
-lambda_opt = 0 # REPLACE THIS WITH lambda_opt estimated from Problem 3
+lambda_opt = .055 # REPLACE THIS WITH lambda_opt estimated from Problem 3
 mses5_train = np.zeros((pmax,2))
 mses5 = np.zeros((pmax,2))
 for p in range(pmax):
+    print(X[:,2])
     Xd = mapNonLinear(X[:,2],p)
     Xdtest = mapNonLinear(Xtest[:,2],p)
     w_d1 = learnRidgeRegression(Xd,y,0)
@@ -265,4 +273,4 @@ plt.subplot(1, 2, 2)
 plt.plot(range(pmax),mses5)
 plt.title('MSE for Test Data')
 plt.legend(('No Regularization','Regularization'))
-plt.show()"""
+plt.show()

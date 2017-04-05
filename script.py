@@ -16,6 +16,51 @@ def ldaLearn(X,y):
     # Outputs
     # means - A d x k matrix containing learnt means for each of the k classes
     # covmat - A single d x d learnt covariance matrix
+
+    # 1.) Split data into k parts (number of classes)
+    # First we must know how many classes we are dealing with...
+
+
+    # Returns a list of unique elements in the y (classes) vector
+    # This gives us a list of the classes (and how many, k, there are)
+    # It also will return how many of each class occurred in the array
+    # We can then get p(Y=y) using the counts (divide each count by the total sum)
+    classes, counts = np.unique(y, return_counts=True)
+    classes = np.array(classes).astype(int)
+    counts = np.array(counts).astype(int)
+    # N = np.shape(X)[0]
+    d = np.shape(X)[1]
+    k = np.size(classes)
+    # p_of_y = counts / np.sum(counts)
+
+    # print(p_of_y)
+    # print(np.sum(p_of_y)) #This should sum to 1
+    # print(N)
+    # print(d)
+    # print(k)
+    # print(classes)
+    # print(counts)
+
+    # Split the data into k-parts
+    X_parts = []
+    for my_class in classes:
+        indices, garbage = np.where(y == my_class)  # This will return indices where the class is my_class
+        X_parts.append(X[indices])  # Select X where class is y
+
+    X_parts = np.array(X_parts)
+
+    # Now the data is split
+    # 2.) Do MLE and train the QDA
+    means = np.zeros((k, d))
+    for my_class in classes:
+        # Compute means for each column for each class
+        means[my_class - 1] = np.mean(X_parts[my_class - 1], axis=0)
+
+    covmat = np.cov(X, rowvar=False)
+    means = means.transpose()  # Make it d x k
+
+    # print(np.shape(means))     # Sanity checks
+    # print(np.shape(covmats))
     
     # IMPLEMENT THIS METHOD
     return means,covmat
@@ -96,7 +141,69 @@ def ldaTest(means,covmat,Xtest,ytest):
     # Outputs
     # acc - A scalar accuracy value
     # ypred - N x 1 column vector indicating the predicted labels
-    
+
+    # 3.) Use trained QDA model to compute theta for p(y)
+
+    # Untranspose means...
+    means = means.transpose()
+
+    # See qdaLearn above for explanation of this next chunk
+    classes, counts = np.unique(ytest, return_counts=True)
+    classes = np.array(classes).astype(int)
+    counts = np.array(counts).astype(int)
+    N = np.shape(Xtest)[0]
+    d = np.shape(Xtest)[1]
+    k = np.shape(means)[0]  # Can't get this from classes here, since the grid data class is all 0's
+    p_of_y = counts / np.sum(counts)  # In the case of the grid data this should all give us 1
+    if (np.shape(p_of_y) != (k,)):
+        p_of_y = np.ones((1, k))
+        classes = np.arange(1, k + 1)
+
+    p_of_y = np.ones((1, k))
+
+    # Now our "favorite expression" comes into play
+    # To calculate p(X=x|Y=y)
+    def calculate_pdf(D, Sigma, x, mu):
+        x_minus_mu = np.reshape((x - mu), (np.shape(x)[0], 1))
+        trans = np.transpose(x_minus_mu)  # .transpose() doesnt work on 1-D vectors...
+
+        inside_exp = np.dot(np.dot(trans, inv(Sigma)), x_minus_mu)
+        exp = np.exp(-0.5 * inside_exp)
+        # out_exp = 1/(((2*np.pi)**(D/2))*sqrt(det(Sigma)))
+        # out_exp = 1/(sqrt(((2*np.pi)**D)*det(Sigma)))
+        out_exp = 1 / sqrt(det(Sigma))
+        return out_exp * exp
+
+    # Each row represents a sample, each column is the class conditional probability for that sample
+    p_of_x_given_y = np.zeros((N, k))
+
+    # Final probability we care about
+    p_of_y_given_x = np.zeros((N, k))
+
+    ypred = np.zeros((N, 1))
+
+    # Loop through all samples
+    for i in range(0, N):
+        sample = Xtest[i]
+        # For each sample, calculate the probabilities of each class
+        for my_class in classes:
+            p_of_x_given_y[i, my_class - 1] = calculate_pdf(d, covmat, sample, means[my_class - 1])
+
+        # Calculate p_of_y_given_x
+        # var = (p_of_y * p_of_x_given_y[i])/np.dot(p_of_y, p_of_x_given_y[i])
+        p_of_y_given_x[i] = (p_of_y * p_of_x_given_y[i]) / np.dot(p_of_y, p_of_x_given_y[i])
+
+        # Get the maximum probability (add 1 since the classes aren't 0 indexed)
+        ypred[i] = np.argmax(p_of_y_given_x[i]) + 1
+
+    # Calculate accuracy
+    acc = 0
+    match, garbage = np.where(ypred == ytest)
+    acc = np.shape(match)[0] / np.shape(ytest)[0]
+
+    #compare = np.concatenate((ypred, ytest), axis = 1)
+    #print(compare)
+
     # IMPLEMENT THIS METHOD
     return acc,ypred
 
@@ -116,9 +223,7 @@ def qdaTest(means,covmats,Xtest,ytest):
     # 3.) Use trained QDA model to compute theta for p(y)
 
     # Untranspose means...
-    print(np.shape(means))
     means = means.transpose()
-    print(np.shape(means))
 
     # See qdaLearn above for explanation of this next chunk
     classes, counts = np.unique(ytest, return_counts=True)
@@ -126,8 +231,13 @@ def qdaTest(means,covmats,Xtest,ytest):
     counts = np.array(counts).astype(int)
     N = np.shape(Xtest)[0]
     d = np.shape(Xtest)[1]
-    k = np.size(classes)
-    p_of_y = counts / np.sum(counts)
+    k = np.shape(means)[0] # Can't get this from classes here, since the grid data class is all 0's
+    p_of_y = counts / np.sum(counts) # In the case of the grid data this should all give us 1
+    if(np.shape(p_of_y) != (k,)):
+        p_of_y = np.ones((1, k))
+        classes = np.arange(1, k+1)
+
+    #p_of_y = np.ones((1, k))
 
     # Now our "favorite expression" comes into play
     # To calculate p(X=x|Y=y)
@@ -137,9 +247,9 @@ def qdaTest(means,covmats,Xtest,ytest):
 
         inside_exp = np.dot(np.dot(trans,inv(Sigma)), x_minus_mu)
         exp = np.exp(-0.5 * inside_exp)
-        out_exp = 1/(((2*np.pi)**(D/2))*sqrt(det(Sigma)))
+        #out_exp = 1/(((2*np.pi)**(D/2))*sqrt(det(Sigma)))
         #out_exp = 1/(sqrt(((2*np.pi)**D)*det(Sigma)))
-        #out_exp = 1 / sqrt(det(Sigma))
+        out_exp = 1 / sqrt(det(Sigma))
         return out_exp*exp
 
     # Each row represents a sample, each column is the class conditional probability for that sample
@@ -262,47 +372,45 @@ if sys.version_info.major == 2:
 else:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')
     
-'''    # LDA
-    #means,covmat = ldaLearn(X,y)
-    #ldaacc,ldares = ldaTest(means,covmat,Xtest,ytest)
-    #print('LDA Accuracy = '+str(ldaacc))
-    # QDA
-    means,covmats = qdaLearn(X,y)
-    qdaacc,qdares = qdaTest(means,covmats,Xtest,ytest)
-    print('QDA Accuracy = '+str(qdaacc))
-    
-    # plotting boundaries
-    x1 = np.linspace(-5,20,100)
-    x2 = np.linspace(-5,20,100)
-    xx1,xx2 = np.meshgrid(x1,x2)
-    xx = np.zeros((x1.shape[0]*x2.shape[0],2))
-    xx[:,0] = xx1.ravel()
-    xx[:,1] = xx2.ravel()
+# LDA
+means,covmat = ldaLearn(X,y)
+ldaacc,ldares = ldaTest(means,covmat,Xtest,ytest)
+print('LDA Accuracy = '+str(ldaacc))
 
-    print(xx)
-    
-    fig = plt.figure(figsize=[12,6])
-    plt.subplot(1, 2, 1)
-    
-    #zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
-    #plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
-    #plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-    #plt.title('LDA')
-    
-    plt.subplot(1, 2, 2)
+# QDA
+means,covmats = qdaLearn(X,y)
+qdaacc,qdares = qdaTest(means,covmats,Xtest,ytest)
+print('QDA Accuracy = '+str(qdaacc))
 
-    #print(xx.shape[0])
-    #exit()
-    
-    zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
-    print(zqdares)
-    print(np.unique(zqdares))
-    quit()
-    plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
-    #plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
-    plt.title('QDA')
+# plotting boundaries
+x1 = np.linspace(-5,20,100)
+x2 = np.linspace(-5,20,100)
+xx1,xx2 = np.meshgrid(x1,x2)
+xx = np.zeros((x1.shape[0]*x2.shape[0],2))
+xx[:,0] = xx1.ravel()
+xx[:,1] = xx2.ravel()
 
-    plt.show()'''
+fig = plt.figure(figsize=[12,6])
+plt.subplot(1, 2, 1)
+
+zacc,zldares = ldaTest(means,covmat,xx,np.zeros((xx.shape[0],1)))
+plt.contourf(x1,x2,zldares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
+plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+plt.title('LDA')
+
+plt.subplot(1, 2, 2)
+
+#print(xx.shape[0])
+#exit()
+
+zacc,zqdares = qdaTest(means,covmats,xx,np.zeros((xx.shape[0],1)))
+#print(zqdares)
+#print(np.unique(zqdares))
+plt.contourf(x1,x2,zqdares.reshape((x1.shape[0],x2.shape[0])),alpha=0.3)
+plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
+plt.title('QDA')
+
+plt.show()
 """# Problem 2
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))

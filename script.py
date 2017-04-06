@@ -164,6 +164,16 @@ def ldaTest(means,covmat,Xtest,ytest):
     # Now our "favorite expression" comes into play
     # To calculate p(X=x|Y=y)
     def calculate_pdf(D, Sigma, x, mu):
+        '''determ = det(Sigma)
+        exp = (x - mu) / determ
+        outside = 1 / (determ * np.sqrt(2 * np.pi))
+        exp = np.dot(exp, np.transpose(exp))
+        denom = determ * determ
+        exp = -0.5 * (exp/denom)
+        exp = np.exp(exp)
+        prob = outside * exp
+        return prob'''
+
         x_minus_mu = np.reshape((x - mu), (np.shape(x)[0], 1))
         trans = np.transpose(x_minus_mu)  # .transpose() doesnt work on 1-D vectors...
 
@@ -226,22 +236,36 @@ def qdaTest(means,covmats,Xtest,ytest):
     means = means.transpose()
 
     # See qdaLearn above for explanation of this next chunk
-    classes, counts = np.unique(ytest, return_counts=True)
-    classes = np.array(classes).astype(int)
-    counts = np.array(counts).astype(int)
+    #classes, counts = np.unique(ytest, return_counts=True)
+    #classes = np.array(classes).astype(int)
+    #counts = np.array(counts).astype(int)
     N = np.shape(Xtest)[0]
     d = np.shape(Xtest)[1]
     k = np.shape(means)[0] # Can't get this from classes here, since the grid data class is all 0's
-    p_of_y = counts / np.sum(counts) # In the case of the grid data this should all give us 1
-    if(np.shape(p_of_y) != (k,)):
-        p_of_y = np.ones((1, k))
-        classes = np.arange(1, k+1)
+
+
+    # We can just ignore p_of_y
+    #p_of_y = counts / np.sum(counts) # In the case of the grid data this should all give us 1
+    #if(np.shape(p_of_y) != (k,)):
+        #p_of_y = np.ones((1, k))
+
+    classes = np.arange(1, k+1)
 
     #p_of_y = np.ones((1, k))
 
     # Now our "favorite expression" comes into play
     # To calculate p(X=x|Y=y)
     def calculate_pdf(D, Sigma, x, mu):
+        determ = det(Sigma)
+        exp = (x - mu) / determ
+        outside = 1 / (determ * np.sqrt(2 * np.pi))
+        exp = np.dot(exp, np.transpose(exp))
+        exp = -0.5 * (exp)
+        exp = np.exp(exp)
+        prob = outside * exp
+        return prob
+
+        '''
         x_minus_mu = np.reshape((x - mu), (np.shape(x)[0], 1))
         trans = np.transpose(x_minus_mu)# .transpose() doesnt work on 1-D vectors...
 
@@ -250,7 +274,7 @@ def qdaTest(means,covmats,Xtest,ytest):
         #out_exp = 1/(((2*np.pi)**(D/2))*sqrt(det(Sigma)))
         #out_exp = 1/(sqrt(((2*np.pi)**D)*det(Sigma)))
         out_exp = 1 / sqrt(det(Sigma))
-        return out_exp*exp
+        return out_exp*exp'''
 
     # Each row represents a sample, each column is the class conditional probability for that sample
     p_of_x_given_y = np.zeros((N,k))
@@ -269,7 +293,8 @@ def qdaTest(means,covmats,Xtest,ytest):
 
         # Calculate p_of_y_given_x
         #var = (p_of_y * p_of_x_given_y[i])/np.dot(p_of_y, p_of_x_given_y[i])
-        p_of_y_given_x[i] = (p_of_y * p_of_x_given_y[i])/np.dot(p_of_y, p_of_x_given_y[i])
+        #p_of_y_given_x[i] = (p_of_y * p_of_x_given_y[i])/np.dot(p_of_y, p_of_x_given_y[i])
+        p_of_y_given_x[i] = (p_of_x_given_y[i] / np.sum(p_of_x_given_y[i]))
 
         # Get the maximum probability (add 1 since the classes aren't 0 indexed)
         ypred[i] = np.argmax(p_of_y_given_x[i]) + 1
@@ -411,7 +436,7 @@ plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 plt.title('QDA')
 
 plt.show()
-"""# Problem 2
+# Problem 2
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
 else:
@@ -450,7 +475,6 @@ plt.plot(lambdas,mses3)
 plt.title('MSE for Test Data')
 
 plt.show()
-"""
 # Problem 4
 """k = 101
 lambdas = np.linspace(0, 1, num=k)
@@ -479,10 +503,8 @@ plt.plot(lambdas,mses4)
 plt.plot(lambdas,mses3)
 plt.title('MSE for Test Data')
 plt.legend(['Using scipy.minimize','Direct minimization'])
-plt.show()
+plt.show()"""
 
-"""
-"""
 # Problem 5
 pmax = 7
 lambda_opt = .055 # REPLACE THIS WITH lambda_opt estimated from Problem 3
@@ -509,4 +531,3 @@ plt.plot(range(pmax),mses5)
 plt.title('MSE for Test Data')
 plt.legend(('No Regularization','Regularization'))
 plt.show()
-"""

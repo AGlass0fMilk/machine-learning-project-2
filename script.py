@@ -365,10 +365,91 @@ def testOLERegression(w,Xtest,ytest):
     return mse
 
 def regressionObjVal(w, X, y, lambd):
-    
+
     # compute squared error (scalar) and gradient of squared error with respect
     # to w (vector) for the given data X and y and the regularization parameter
     # lambda
+
+    # Use code from OLE to calculate the squared loss:
+
+    '''inner = (y - X*w)
+    firstTerm = np.dot(inner.T, inner) * 0.5
+    firstTerm = np.sum(firstTerm)
+
+    regularization = 0.5 * lambd * np.dot(w.T, w)
+
+    error = firstTerm + regularization'''
+
+
+    rows = X.shape[0]
+    cols = X.shape[1]
+    sumval = 0
+    for i in range(0, rows):
+        sumval += (y[i,] - np.inner((w.T), X[i,])) ** 2
+    error = sumval * (1 /rows)
+
+    # Add the regularization term, (1/2)labmda * w^T*w
+
+    #regularization = 0.5 * lambd * np.dot(w.T, w)
+    #error += regularization
+
+
+    #error = (1/(2*rows))*sumval + regularization
+    #print(error)
+
+    y1 = np.zeros((242,))
+
+    for i in range(242):
+        y1[i] = y[i]
+
+    n = X.shape[0]
+    x1 = np.dot(X, w)
+
+    '''sumProduct = y1 - x1
+    bracketValue = np.dot(sumProduct.transpose(), sumProduct)
+    error = np.sum(bracketValue) / (2 * n)
+    reg = (lambd / 2) * (np.dot(np.transpose(w), w))
+
+
+    error = (error + reg)
+    print(error)
+    quit()'''
+
+    # Now we calculate the gradient of the error function
+    # dJ(w)/dw_j = sum from i = 1 to N[w.T*x_i - y_i) * x_ij
+
+    error_grad2 = np.ones((rows, cols))
+    for i in range(0, rows):
+        error_grad2[i,] = ((np.dot((w.T), X[i,])) - y[i,]) * X[i,]
+        #for j in range(0, cols):
+        #    error_grad[i,j] =  (np.inner((w.T), X[i,]) - y[i,]) * X[i,j]
+        #    print(error_grad[i,])
+        # print(error_grad2[i,])
+        # quit()
+
+    # Sum along columns
+    error_grad = np.sum(error_grad2, axis = 0)
+
+    #print(error_grad)
+    #quit()
+
+    #reg = lambd * np.dot(w.T, w)
+    #print(np.shape(reg))
+    #print(np.shape(error_grad))
+    #error_grad += reg
+
+    #print(error_grad)
+
+    '''x2 = np.dot(X.transpose(), X)
+    x4 = np.dot(w.transpose(), x2)
+    x3 = np.dot(X.transpose(), y1)
+
+
+    error_grad = ((x4 - x3) / n) + (lambd * w)
+    print(error_grad)
+    quit()'''
+
+    print("Objective Function: " + str(error))
     
     # IMPLEMENT THIS METHOD
     return error, error_grad
@@ -392,7 +473,7 @@ def mapNonLinear(x,p):
 
 # Problem 1
 # load the sample data
-if sys.version_info.major == 2:
+'''if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'))
 else:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')
@@ -436,6 +517,7 @@ plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 plt.title('QDA')
 
 plt.show()
+'''
 # Problem 2
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
@@ -474,9 +556,9 @@ plt.subplot(1, 2, 2)
 plt.plot(lambdas,mses3)
 plt.title('MSE for Test Data')
 
-plt.show()
+#plt.show()
 # Problem 4
-"""k = 101
+k = 101
 lambdas = np.linspace(0, 1, num=k)
 i = 0
 mses4_train = np.zeros((k,1))
@@ -503,9 +585,9 @@ plt.plot(lambdas,mses4)
 plt.plot(lambdas,mses3)
 plt.title('MSE for Test Data')
 plt.legend(['Using scipy.minimize','Direct minimization'])
-plt.show()"""
+plt.show()
 
-# Problem 5
+'''# Problem 5
 pmax = 7
 lambda_opt = .055 # REPLACE THIS WITH lambda_opt estimated from Problem 3
 mses5_train = np.zeros((pmax,2))
@@ -530,4 +612,4 @@ plt.subplot(1, 2, 2)
 plt.plot(range(pmax),mses5)
 plt.title('MSE for Test Data')
 plt.legend(('No Regularization','Regularization'))
-plt.show()
+plt.show()'''

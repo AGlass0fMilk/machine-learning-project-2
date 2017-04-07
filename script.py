@@ -390,20 +390,20 @@ def regressionObjVal(w, X, y, lambd):
 
     # Add the regularization term, (1/2)labmda * w^T*w
 
-    #regularization = 0.5 * lambd * np.dot(w.T, w)
-    #error += regularization
+    regularization = 0.5 * lambd * np.dot(w.T, w)
+    error += regularization
 
 
     #error = (1/(2*rows))*sumval + regularization
     #print(error)
 
-    y1 = np.zeros((242,))
+    #y1 = np.zeros((242,))
 
-    for i in range(242):
-        y1[i] = y[i]
+    #for i in range(242):
+        #y1[i] = y[i]
 
-    n = X.shape[0]
-    x1 = np.dot(X, w)
+    #n = X.shape[0]
+    #x1 = np.dot(X, w)
 
     '''sumProduct = y1 - x1
     bracketValue = np.dot(sumProduct.transpose(), sumProduct)
@@ -433,10 +433,10 @@ def regressionObjVal(w, X, y, lambd):
     #print(error_grad)
     #quit()
 
-    #reg = lambd * np.dot(w.T, w)
+    reg = lambd * np.dot(w.T, w)
     #print(np.shape(reg))
     #print(np.shape(error_grad))
-    #error_grad += reg
+    error_grad += reg
 
     #print(error_grad)
 

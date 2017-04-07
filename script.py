@@ -380,13 +380,19 @@ def regressionObjVal(w, X, y, lambd):
 
     error = firstTerm + regularization'''
 
+    ycol =  np.reshape(y, (np.shape(y)[0]))
 
     rows = X.shape[0]
     cols = X.shape[1]
     sumval = 0
-    for i in range(0, rows):
-        sumval += (y[i,] - np.inner((w.T), X[i,])) ** 2
-    error = sumval * (1 /rows)
+    #for i in range(0, rows):
+    #    sumval += (y[i,] - np.inner((w.T), X[i,])) ** 2
+    #error = sumval * (1 /rows)
+
+    xw = np.dot(X, w)
+    inside = ycol - xw # Make y a column vector
+    middle = np.dot(inside.T, inside)
+    error = np.sum(middle) /(2*rows)
 
     # Add the regularization term, (1/2)labmda * w^T*w
 
@@ -397,15 +403,15 @@ def regressionObjVal(w, X, y, lambd):
     #error = (1/(2*rows))*sumval + regularization
     #print(error)
 
-    #y1 = np.zeros((242,))
+    '''y1 = np.zeros((242,))
 
-    #for i in range(242):
-        #y1[i] = y[i]
+    for i in range(242):
+        y1[i] = y[i]
 
-    #n = X.shape[0]
-    #x1 = np.dot(X, w)
+    n = X.shape[0]
+    x1 = np.dot(X, w)
 
-    '''sumProduct = y1 - x1
+    sumProduct = y1 - x1
     bracketValue = np.dot(sumProduct.transpose(), sumProduct)
     error = np.sum(bracketValue) / (2 * n)
     reg = (lambd / 2) * (np.dot(np.transpose(w), w))
@@ -420,7 +426,7 @@ def regressionObjVal(w, X, y, lambd):
 
     error_grad2 = np.ones((rows, cols))
     for i in range(0, rows):
-        error_grad2[i,] = ((np.dot((w.T), X[i,])) - y[i,]) * X[i,]
+        error_grad2[i,] = ((np.dot((w.T), X[i,])) - ycol[i]) * X[i,]
         #for j in range(0, cols):
         #    error_grad[i,j] =  (np.inner((w.T), X[i,]) - y[i,]) * X[i,j]
         #    print(error_grad[i,])

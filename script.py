@@ -33,14 +33,6 @@ def ldaLearn(X,y):
     k = np.size(classes)
     # p_of_y = counts / np.sum(counts)
 
-    # print(p_of_y)
-    # print(np.sum(p_of_y)) #This should sum to 1
-    # print(N)
-    # print(d)
-    # print(k)
-    # print(classes)
-    # print(counts)
-
     # Split the data into k-parts
     X_parts = []
     for my_class in classes:
@@ -58,9 +50,6 @@ def ldaLearn(X,y):
 
     covmat = np.cov(X, rowvar=False)
     means = means.transpose()  # Make it d x k
-
-    # print(np.shape(means))     # Sanity checks
-    # print(np.shape(covmats))
     
     # IMPLEMENT THIS METHOD
     return means,covmat
@@ -78,12 +67,6 @@ def qdaLearn(X,y):
     # d = 2
     # k = 5
 
-    # Debug:
-    #print(X)
-    #print(y)
-    #print(np.shape(X)) #(150,2)
-    #print(np.shape(y)) #(150,1)
-
     # 1.) Split data into k parts (number of classes)
     # First we must know how many classes we are dealing with...
 
@@ -99,14 +82,6 @@ def qdaLearn(X,y):
     d = np.shape(X)[1]
     k = np.size(classes)
     #p_of_y = counts / np.sum(counts)
-
-    # print(p_of_y)
-    # print(np.sum(p_of_y)) #This should sum to 1
-    # print(N)
-    # print(d)
-    # print(k)
-    # print(classes)
-    # print(counts)
 
     # Split the data into k-parts
     X_parts = []
@@ -126,9 +101,6 @@ def qdaLearn(X,y):
         covmats[my_class-1] = np.cov(X_parts[my_class-1], rowvar=False)
 
     means = means.transpose() # Make it d x k
-
-    #print(np.shape(means))     # Sanity checks
-    #print(np.shape(covmats))
 
     # IMPLEMENT THIS METHOD
     return means, covmats
@@ -164,23 +136,12 @@ def ldaTest(means,covmat,Xtest,ytest):
     # Now our "favorite expression" comes into play
     # To calculate p(X=x|Y=y)
     def calculate_pdf(D, Sigma, x, mu):
-        '''determ = det(Sigma)
-        exp = (x - mu) / determ
-        outside = 1 / (determ * np.sqrt(2 * np.pi))
-        exp = np.dot(exp, np.transpose(exp))
-        denom = determ * determ
-        exp = -0.5 * (exp/denom)
-        exp = np.exp(exp)
-        prob = outside * exp
-        return prob'''
 
         x_minus_mu = np.reshape((x - mu), (np.shape(x)[0], 1))
         trans = np.transpose(x_minus_mu)  # .transpose() doesnt work on 1-D vectors...
 
         inside_exp = np.dot(np.dot(trans, inv(Sigma)), x_minus_mu)
         exp = np.exp(-0.5 * inside_exp)
-        # out_exp = 1/(((2*np.pi)**(D/2))*sqrt(det(Sigma)))
-        # out_exp = 1/(sqrt(((2*np.pi)**D)*det(Sigma)))
         out_exp = 1 / sqrt(det(Sigma))
         return out_exp * exp
 
@@ -200,7 +161,6 @@ def ldaTest(means,covmat,Xtest,ytest):
             p_of_x_given_y[i, my_class - 1] = calculate_pdf(d, covmat, sample, means[my_class - 1])
 
         # Calculate p_of_y_given_x
-        # var = (p_of_y * p_of_x_given_y[i])/np.dot(p_of_y, p_of_x_given_y[i])
         p_of_y_given_x[i] = (p_of_y * p_of_x_given_y[i]) / np.dot(p_of_y, p_of_x_given_y[i])
 
         # Get the maximum probability (add 1 since the classes aren't 0 indexed)
@@ -226,10 +186,6 @@ def qdaTest(means,covmats,Xtest,ytest):
     # acc - A scalar accuracy value
     # ypred - N x 1 column vector indicating the predicted labels
 
-    # Debug
-    #print(np.shape(Xtest))
-    #print(np.shape(ytest))
-
     # 3.) Use trained QDA model to compute theta for p(y)
 
     # Untranspose means...
@@ -243,12 +199,6 @@ def qdaTest(means,covmats,Xtest,ytest):
     d = np.shape(Xtest)[1]
     k = np.shape(means)[0] # Can't get this from classes here, since the grid data class is all 0's
 
-
-    # We can just ignore p_of_y
-    #p_of_y = counts / np.sum(counts) # In the case of the grid data this should all give us 1
-    #if(np.shape(p_of_y) != (k,)):
-        #p_of_y = np.ones((1, k))
-
     classes = np.arange(1, k+1)
 
     #p_of_y = np.ones((1, k))
@@ -256,16 +206,6 @@ def qdaTest(means,covmats,Xtest,ytest):
     # Now our "favorite expression" comes into play
     # To calculate p(X=x|Y=y)
     def calculate_pdf(D, Sigma, x, mu):
-        '''determ = det(Sigma)
-        exp = (x - mu) / determ
-        outside = 1 / (determ * np.sqrt(2 * np.pi))
-        exp = np.dot(exp, np.transpose(exp))
-        exp = -0.5 * (exp)
-        exp = np.exp(exp)
-        prob = outside * exp
-        return prob'''
-
-
         x_minus_mu = np.reshape((x - mu), (np.shape(x)[0], 1))
         trans = np.transpose(x_minus_mu)# .transpose() doesnt work on 1-D vectors...
 
@@ -292,8 +232,6 @@ def qdaTest(means,covmats,Xtest,ytest):
             p_of_x_given_y[i, my_class-1] = calculate_pdf(d, covmats[my_class-1], sample, means[my_class-1])
 
         # Calculate p_of_y_given_x
-        #var = (p_of_y * p_of_x_given_y[i])/np.dot(p_of_y, p_of_x_given_y[i])
-        #p_of_y_given_x[i] = (p_of_y * p_of_x_given_y[i])/np.dot(p_of_y, p_of_x_given_y[i])
         p_of_y_given_x[i] = (p_of_x_given_y[i] / np.sum(p_of_x_given_y[i]))
 
         # Get the maximum probability (add 1 since the classes aren't 0 indexed)
@@ -370,44 +308,12 @@ def regressionObjVal(w, X, y, lambd):
     # to w (vector) for the given data X and y and the regularization parameter
     # lambda
 
-    #print(np.shape(w))
-    #print(np.shape(X))
-    #print(np.shape(y))
-
-    '''inner = (y - X*w)
-    firstTerm = np.dot(inner.T, inner) * 0.5
-    firstTerm = np.sum(firstTerm)
-
-    regularization = 0.5 * lambd * np.dot(w.T, w)
-
-    error = firstTerm + regularization'''
     wm = np.asmatrix(w)
     wm = w.T
     ycol =  np.reshape(y, (np.shape(y)[0]))
 
     rows = X.shape[0]
     cols = X.shape[1]
-    sumval = 0
-    #for i in range(0, rows):
-    #    sumval += (y[i,] - np.inner((w.T), X[i,])) ** 2
-    #error = sumval * (1 /rows)
-
-    #xw = np.dot(X, wm)
-    #inside = ycol - xw # Make y a column vector
-    #middle = np.dot(inside.T, inside)
-    #error = np.sum(middle) /(2*rows)
-
-    #print("X: " + str(np.shape(X)))
-    #print("w: " + str(np.shape(w)))
-    #print("wm: " + str(np.shape(wm)))
-    #print("ycol: " + str(np.shape(ycol)))
-
-    #print("XT: " + str(np.shape(X.T)))
-
-    #print(np.shape(ycol - np.dot(X, w)))
-    #print(np.shape(lambd * w))
-
-    #quit()
 
     xw = np.dot(X, w)
     middle = ycol - xw
@@ -418,77 +324,15 @@ def regressionObjVal(w, X, y, lambd):
     regularization = 0.5 * lambd * np.dot(w, w)
     error += regularization
 
-
-    #error = (1/(2*rows))*sumval + regularization
-    #print(error)
-
-    '''y1 = np.zeros((242,))
-
-    for i in range(242):
-        y1[i] = y[i]
-
-    n = X.shape[0]
-    x1 = np.dot(X, w)
-
-    sumProduct = y1 - x1
-    bracketValue = np.dot(sumProduct.transpose(), sumProduct)
-    error = np.sum(bracketValue) / (2 * n)
-    reg = (lambd / 2) * (np.dot(np.transpose(w), w))
-
-
-    error = (error + reg)
-    print(error)
-    quit()'''
-
     # Now we calculate the gradient of the error function
     # dJ(w)/dw_j = sum from i = 1 to N[w.T*x_i - y_i) * x_ij
-
-    #error_grad2 = np.ones((rows, cols))
-   # for i in range(0, rows):
-       # error_grad2[i,] = ((np.dot((wm.T), X[i,])) - ycol[i]) * X[i,]
-        #for j in range(0, cols):
-        #    error_grad[i,j] =  (np.inner((w.T), X[i,]) - y[i,]) * X[i,j])
-
-    # Sum along columns
-    #error_grad = np.sum(error_grad2, axis = 0)
-
-    #print("X: " + str(np.shape(X)))
-    #print("w: " + str(np.shape(w)))
-    #print("wm: " + str(np.shape(wm)))
-    #print("ycol: " + str(np.shape(ycol)))
-
-    #print("XT: " + str(np.shape(X.T)))
-
-    #print(np.shape(ycol - np.dot(X, w)))
-    #print(np.shape(lambd * w))
-
-    #quit()
-
 
     xtw = np.dot(X, w)
     inner = ycol - xtw
     first = -1 * np.dot(X.T, inner)
 
-    #print(error_grad)
-    #quit()
-
     reg = lambd * w
-    #print(np.shape(reg))
-    #print(np.shape(error_grad))
     error_grad = first + reg
-
-    #print(np.shape(error_grad))
-
-    #print(error_grad)
-
-    '''x2 = np.dot(X.transpose(), X)
-    x4 = np.dot(w.transpose(), x2)
-    x3 = np.dot(X.transpose(), y1)
-
-
-    error_grad = ((x4 - x3) / n) + (lambd * w)
-    print(error_grad)
-    quit()'''
 
     print("Objective Function: " + str(error))
     

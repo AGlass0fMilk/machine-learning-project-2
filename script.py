@@ -256,16 +256,16 @@ def qdaTest(means,covmats,Xtest,ytest):
     # Now our "favorite expression" comes into play
     # To calculate p(X=x|Y=y)
     def calculate_pdf(D, Sigma, x, mu):
-        determ = det(Sigma)
+        '''determ = det(Sigma)
         exp = (x - mu) / determ
         outside = 1 / (determ * np.sqrt(2 * np.pi))
         exp = np.dot(exp, np.transpose(exp))
         exp = -0.5 * (exp)
         exp = np.exp(exp)
         prob = outside * exp
-        return prob
+        return prob'''
 
-        '''
+
         x_minus_mu = np.reshape((x - mu), (np.shape(x)[0], 1))
         trans = np.transpose(x_minus_mu)# .transpose() doesnt work on 1-D vectors...
 
@@ -274,7 +274,7 @@ def qdaTest(means,covmats,Xtest,ytest):
         #out_exp = 1/(((2*np.pi)**(D/2))*sqrt(det(Sigma)))
         #out_exp = 1/(sqrt(((2*np.pi)**D)*det(Sigma)))
         out_exp = 1 / sqrt(det(Sigma))
-        return out_exp*exp'''
+        return out_exp*exp
 
     # Each row represents a sample, each column is the class conditional probability for that sample
     p_of_x_given_y = np.zeros((N,k))
@@ -370,7 +370,9 @@ def regressionObjVal(w, X, y, lambd):
     # to w (vector) for the given data X and y and the regularization parameter
     # lambda
 
-    # Use code from OLE to calculate the squared loss:
+    #print(np.shape(w))
+    #print(np.shape(X))
+    #print(np.shape(y))
 
     '''inner = (y - X*w)
     firstTerm = np.dot(inner.T, inner) * 0.5
@@ -379,7 +381,8 @@ def regressionObjVal(w, X, y, lambd):
     regularization = 0.5 * lambd * np.dot(w.T, w)
 
     error = firstTerm + regularization'''
-
+    wm = np.asmatrix(w)
+    wm = w.T
     ycol =  np.reshape(y, (np.shape(y)[0]))
 
     rows = X.shape[0]
@@ -389,14 +392,30 @@ def regressionObjVal(w, X, y, lambd):
     #    sumval += (y[i,] - np.inner((w.T), X[i,])) ** 2
     #error = sumval * (1 /rows)
 
+    #xw = np.dot(X, wm)
+    #inside = ycol - xw # Make y a column vector
+    #middle = np.dot(inside.T, inside)
+    #error = np.sum(middle) /(2*rows)
+
+    #print("X: " + str(np.shape(X)))
+    #print("w: " + str(np.shape(w)))
+    #print("wm: " + str(np.shape(wm)))
+    #print("ycol: " + str(np.shape(ycol)))
+
+    #print("XT: " + str(np.shape(X.T)))
+
+    #print(np.shape(ycol - np.dot(X, w)))
+    #print(np.shape(lambd * w))
+
+    #quit()
+
     xw = np.dot(X, w)
-    inside = ycol - xw # Make y a column vector
-    middle = np.dot(inside.T, inside)
-    error = np.sum(middle) /(2*rows)
+    middle = ycol - xw
+    error = 0.5 * np.dot(middle, middle)
 
     # Add the regularization term, (1/2)labmda * w^T*w
 
-    regularization = 0.5 * lambd * np.dot(w.T, w)
+    regularization = 0.5 * lambd * np.dot(w, w)
     error += regularization
 
 
@@ -424,25 +443,41 @@ def regressionObjVal(w, X, y, lambd):
     # Now we calculate the gradient of the error function
     # dJ(w)/dw_j = sum from i = 1 to N[w.T*x_i - y_i) * x_ij
 
-    error_grad2 = np.ones((rows, cols))
-    for i in range(0, rows):
-        error_grad2[i,] = ((np.dot((w.T), X[i,])) - ycol[i]) * X[i,]
+    #error_grad2 = np.ones((rows, cols))
+   # for i in range(0, rows):
+       # error_grad2[i,] = ((np.dot((wm.T), X[i,])) - ycol[i]) * X[i,]
         #for j in range(0, cols):
-        #    error_grad[i,j] =  (np.inner((w.T), X[i,]) - y[i,]) * X[i,j]
-        #    print(error_grad[i,])
-        # print(error_grad2[i,])
-        # quit()
+        #    error_grad[i,j] =  (np.inner((w.T), X[i,]) - y[i,]) * X[i,j])
 
     # Sum along columns
-    error_grad = np.sum(error_grad2, axis = 0)
+    #error_grad = np.sum(error_grad2, axis = 0)
+
+    #print("X: " + str(np.shape(X)))
+    #print("w: " + str(np.shape(w)))
+    #print("wm: " + str(np.shape(wm)))
+    #print("ycol: " + str(np.shape(ycol)))
+
+    #print("XT: " + str(np.shape(X.T)))
+
+    #print(np.shape(ycol - np.dot(X, w)))
+    #print(np.shape(lambd * w))
+
+    #quit()
+
+
+    xtw = np.dot(X, w)
+    inner = ycol - xtw
+    first = -1 * np.dot(X.T, inner)
 
     #print(error_grad)
     #quit()
 
-    reg = lambd * np.dot(w.T, w)
+    reg = lambd * w
     #print(np.shape(reg))
     #print(np.shape(error_grad))
-    error_grad += reg
+    error_grad = first + reg
+
+    #print(np.shape(error_grad))
 
     #print(error_grad)
 
@@ -479,7 +514,7 @@ def mapNonLinear(x,p):
 
 # Problem 1
 # load the sample data
-'''if sys.version_info.major == 2:
+if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'))
 else:
     X,y,Xtest,ytest = pickle.load(open('sample.pickle','rb'),encoding = 'latin1')
@@ -523,7 +558,7 @@ plt.scatter(Xtest[:,0],Xtest[:,1],c=ytest)
 plt.title('QDA')
 
 plt.show()
-'''
+
 # Problem 2
 if sys.version_info.major == 2:
     X,y,Xtest,ytest = pickle.load(open('diabetes.pickle','rb'))
@@ -562,7 +597,7 @@ plt.subplot(1, 2, 2)
 plt.plot(lambdas,mses3)
 plt.title('MSE for Test Data')
 
-#plt.show()
+plt.show()
 # Problem 4
 k = 101
 lambdas = np.linspace(0, 1, num=k)
@@ -593,7 +628,7 @@ plt.title('MSE for Test Data')
 plt.legend(['Using scipy.minimize','Direct minimization'])
 plt.show()
 
-'''# Problem 5
+# Problem 5
 pmax = 7
 lambda_opt = .055 # REPLACE THIS WITH lambda_opt estimated from Problem 3
 mses5_train = np.zeros((pmax,2))
@@ -618,4 +653,4 @@ plt.subplot(1, 2, 2)
 plt.plot(range(pmax),mses5)
 plt.title('MSE for Test Data')
 plt.legend(('No Regularization','Regularization'))
-plt.show()'''
+plt.show()

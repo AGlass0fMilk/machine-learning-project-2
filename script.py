@@ -256,16 +256,6 @@ def learnOLERegression(X,y):
     # w = d x 1
     
     #based off equation on handout c1 page 6
-    """rows = X.shape[0]
-    columns = X.shape[1]
-    w = np.ones((columns, 1))
-    for hg in range (0,100):
-        for j in range (0,columns):
-            sumval = 0
-            for i in range (0,rows):
-                sumval += (np.inner(w.T, X[i,])-y[i,])*X[i,j]
-            w[j,] = w[j,] - (.005)*sumval #we'll have to experiment for optimal alpha I assume.
-    # IMPLEMENT THIS METHOD"""
     columns = X.shape[1]
     w = np.dot(np.dot(inv(np.dot(X.T,X)),X.T),y)
     return w
